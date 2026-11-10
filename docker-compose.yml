@@ -1,0 +1,42 @@
+﻿services:
+  user_mysql:
+    image: mysql:8.0
+    container_name: shopease_user_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: shopease_user_db
+      MYSQL_USER: shopease_user
+      MYSQL_PASSWORD: shopease_password
+    ports:
+      - "3310:3306"
+    volumes:
+      - user_mysql_data:/var/lib/mysql
+    networks:
+      - user_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  user_service:
+    build: .
+    container_name: shopease_user_container
+    restart: always
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    networks:
+      - user_net
+    depends_on:
+      user_mysql:
+        condition: service_healthy
+
+volumes:
+  user_mysql_data:
+
+networks:
+  user_net:
+    driver: bridge
