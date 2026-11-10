@@ -69,3 +69,10 @@ docker compose exec user_service alembic upgrade head
 - **Distributed Status Handling:** 
   1. The User Service marks \UserProfile.is_active = False\ locally.
   2. In production with an API Gateway or event bus (e.g., Kafka/RabbitMQ), a \user.deactivated\ event is dispatched to trigger the Auth Service to revoke active refresh tokens and set \User.is_active = False\ in the auth database, preventing future login sessions while preserving data integrity across boundaries.
+
+## Account Deactivation & Cross-Service Consistency
+- **User Service Role:** When a user's profile is deactivated (\is_active = False\) via \PATCH /api/users/profile\, the record and historical address relations remain intact for compliance, auditing, and pending order fulfillment.
+- **Authentication Service Separation:** Deactivating the profile does not silently drop or corrupt the user credentials record in the Authentication Service (\shopease_auth_db\).
+- **Distributed Status Handling:** 
+  1. The User Service marks \UserProfile.is_active = False\ locally.
+  2. In production with an API Gateway or event bus (e.g., Kafka/RabbitMQ), a \user.deactivated\ event is dispatched to trigger the Auth Service to revoke active refresh tokens and set \User.is_active = False\ in the auth database, preventing future login sessions while preserving data integrity across boundaries.
